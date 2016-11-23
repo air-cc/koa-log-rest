@@ -32,7 +32,7 @@ import fs from 'fs'
 import {join as pathJoin} from 'path'
 import {sync as mkdirpSync} from 'mkdirp'
 import debugMod from 'debug'
-import MongodbSaver from './MongodbSaver'
+import MongodbSaver from './mongodbSaver'
 
 const debug = debugMod('rest-log')
 promisifyAll(fs)
