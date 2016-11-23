@@ -1,2 +1,2 @@
-# koa-log-rest
+# restlog
 auto manage web app log working with restful api

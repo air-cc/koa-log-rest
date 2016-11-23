@@ -1,14 +1,20 @@
 {
-  "name": "koa-log-rest",
+  "name": "restlog",
   "version": "0.0.1",
   "description": "auto manage web app log working with restful api",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "analyze-coverage": "node_modules/babel-cli/bin/babel-node.js node_modules/.bin/istanbul cover node_modules/.bin/_mocha",
+    "check-coverage": "node_modules/babel-cli/bin/babel-node.js node_modules/.bin/istanbul check-coverage",
+    "coverage": "rm -rf coverage/ && npm run analyze-coverage && npm run check-coverage && node_modules/.bin/codecov",
+    "mocha": "NODE_ENV=test node_modules/babel-cli/bin/babel-node.js  node_modules/.bin/_mocha",
+    "compile": "rm -rf lib/ && ./node_modules/babel-cli/bin/babel.js src -d lib",
+    "lint": "./node_modules/eslint/bin/eslint.js src/",
+    "test": "npm run lint && npm run compile && npm run coverage"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/air-cc/koa-log-rest.git"
+    "url": "git+https://github.com/air-cc/restlog.git"
   },
   "keywords": [
     "koa",
@@ -19,7 +25,28 @@
   "author": "air-cc <c989692c@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/air-cc/koa-log-rest/issues"
+    "url": "https://github.com/air-cc/restlog/issues"
   },
-  "homepage": "https://github.com/air-cc/koa-log-rest#readme"
+  "homepage": "https://github.com/air-cc/restlog#readme",
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-eslint": "^6.1.2",
+    "babel-plugin-transform-async-to-generator": "^6.16.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
+    "chai": "^3.5.0",
+    "codecov": "^1.0.1",
+    "eslint": "^3.10.2",
+    "ioredis": "^2.4.0",
+    "istanbul": "^0.4.5",
+    "koa": "^2.0.0-alpha.7",
+    "mocha": "^3.1.2",
+    "mongodb": "^2.2.11",
+    "supertest": "^2.0.1"
+  },
+  "dependencies": {
+    "bluebird": "^3.4.6",
+    "debug": "^2.3.3",
+    "mkdirp": "^0.5.1",
+    "readline": "^1.3.0"
+  }
 }
