@@ -259,6 +259,8 @@ class RestLog {
    * @return
    */
   async local2Remote() {
+    debug('local2remote start')
+
     const files = await fs.readdirAsync(this.localPath)
 
     debug(`get files from ${this.localPath}`, files)
@@ -269,11 +271,10 @@ class RestLog {
       }
 
       const fileDir = pathJoin(this.localPath, fileName)
-      const rl = readline.createInterface({
-        input: fs.createReadStream(fileDir)
-      })
-
       await new Promise((resolve, reject)=> {
+        const rl = readline.createInterface({
+          input: fs.createReadStream(fileDir)
+        })
 
         rl.on('line', (line)=> {
           if (!line) {
@@ -304,6 +305,8 @@ class RestLog {
       await fs.unlinkAsync(fileDir)
       debug(`delete file ${fileDir}`)
     }
+
+    debug('local2remote over')
   }
 
 }
