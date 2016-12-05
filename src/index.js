@@ -260,8 +260,16 @@ class RestLog {
    */
   async local2Remote() {
     debug('local2remote start')
+    let files = null
+    try {
+      files = await fs.readdirAsync(this.localPath)
+    } catch (error) {
+      debug(`get files from ${this.localPath} fail`, error)
+    }
 
-    const files = await fs.readdirAsync(this.localPath)
+    if (!files) {
+      return
+    }
 
     debug(`get files from ${this.localPath}`, files)
 
