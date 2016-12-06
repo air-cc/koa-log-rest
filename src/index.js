@@ -57,7 +57,7 @@ class RestLog {
    * @param   {number}      opts.uploadCondition.intervalTime   缓存目录轮询检测时间（秒）
    * @return {[type]}      [description]
    */
-  constructor ({getUserId, getResource, localPath, filter, dbSaver, uploadCondition={}}) {
+  constructor ({getUserId, getResource, localPath, filter, dbSaver, strict={}, uploadCondition={}}) {
     if (typeof getUserId !== 'function') {
       throw new Error('must give a function to get userId')
     }
@@ -78,6 +78,9 @@ class RestLog {
     this.dbSaver = new MongodbSaver({dbClient, collectionName})
 
     this.bodySizeLimit = 2048
+
+    this.strictObj = strict
+
     this.filesLimit = uploadCondition.filesLimit || 1
     this.fileSizeLimit = (uploadCondition.fileSizeLimit || 10 ) * 1024
     this.fileExpireTime = (uploadCondition.fileExpireTime || 10 ) * 1000 // default: 3 * 60
@@ -112,7 +115,11 @@ class RestLog {
       reqBody = {}
     }
 
+    let userId = await this.getUserId(ctx) || null // logout && normal
+    const resource = await this.getResource(ctx) || null
+
     Object.assign(optData, {
+      resource: resource,
       operation: method,
       ip: ip,     // 注意这里获取到的 IP 被 KOA 转成 IPv6 格式了
       status: 0,
@@ -133,23 +140,30 @@ class RestLog {
       err = error
     }
 
-    const userId = await this.getUserId(ctx) || null
-    const resource = await this.getResource(ctx) || null
 
     let resBody = ctx.body || {}
     if (JSON.stringify(resBody).length >= this.bodySizeLimit) {
       resBody = {}
     }
 
+    userId = userId || await this.getUserId(ctx) || null // logout && normal
+
     Object.assign(optData, {
       userId: userId,
-      resource: resource,
       status: err ? -1 : 1,
       originResponse: {
         statusCode: err ? (err.status || 500) : (ctx.status || 404),
         body: resBody
       }
     })
+
+
+    for (const key in this.strictObj) {
+      const strictItem = this.strictObj[key]
+      if (typeof strictItem === 'boolean' && strictItem && !optData[key]) {
+        return
+      }
+    }
 
     // 提交数据，交由下游方法来处理
     this.submit(optData)
