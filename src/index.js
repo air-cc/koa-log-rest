@@ -27,7 +27,7 @@
   */
 
 import {promisifyAll} from 'bluebird'
-import readline from 'readline'
+import readline from 'linebyline'
 import fs from 'fs'
 import {join as pathJoin} from 'path'
 import {sync as mkdirpSync} from 'mkdirp'
@@ -280,10 +280,7 @@ class RestLog {
 
       const fileDir = pathJoin(this.localPath, fileName)
       await new Promise((resolve, reject)=> {
-        const rl = readline.createInterface({
-          input: fs.createReadStream(fileDir)
-        })
-
+        const rl = readline(fileDir)
         rl.on('line', (line)=> {
           if (!line) {
             return resolve(null)
@@ -306,6 +303,8 @@ class RestLog {
           this.dbSaver.push(obj)
             .then(resolve)
             .catch(reject)
+        }).on((err)=> {
+          debug(`read file ${fileDir} line by line fail`, err)
         })
       })
       debug(`update all data from ${fileDir} to remote db`)
