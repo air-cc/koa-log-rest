@@ -1,6 +1,6 @@
 {
   "name": "restlog",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "auto manage web app log working with restful api",
   "main": "lib/index.js",
   "scripts": {

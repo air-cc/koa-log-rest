@@ -77,6 +77,7 @@ class RestLog {
     collectionName = collectionName || 'restlog'
     this.dbSaver = new MongodbSaver({dbClient, collectionName})
 
+    this.bodySizeLimit = 2048
     this.filesLimit = uploadCondition.filesLimit || 1
     this.fileSizeLimit = (uploadCondition.fileSizeLimit || 10 ) * 1024
     this.fileExpireTime = (uploadCondition.fileExpireTime || 10 ) * 1000 // default: 3 * 60
@@ -106,6 +107,11 @@ class RestLog {
       return next()
     }
 
+    let reqBody = ctx.request.body || {}
+    if (JSON.stringify(reqBody).length >= this.bodySizeLimit) {
+      reqBody = {}
+    }
+
     Object.assign(optData, {
       operation: method,
       ip: ip,     // 注意这里获取到的 IP 被 KOA 转成 IPv6 格式了
@@ -115,7 +121,7 @@ class RestLog {
         url: url,
         method: method,
         userAgent: ctx.headers['user-agent'] || 'unknown',
-        body: ctx.request.body
+        body: reqBody
       }
     })
 
@@ -129,17 +135,21 @@ class RestLog {
 
     const userId = await this.getUserId(ctx) || null
     const resource = await this.getResource(ctx) || null
+
+    let resBody = ctx.body || {}
+    if (JSON.stringify(resBody).length >= this.bodySizeLimit) {
+      resBody = {}
+    }
+
     Object.assign(optData, {
       userId: userId,
       resource: resource,
       status: err ? -1 : 1,
       originResponse: {
         statusCode: err ? (err.status || 500) : (ctx.status || 404),
-        body: ctx.body
+        body: resBody
       }
     })
-
-    debug('get optData', optData)
 
     // 提交数据，交由下游方法来处理
     this.submit(optData)
@@ -281,7 +291,7 @@ class RestLog {
       const fileDir = pathJoin(this.localPath, fileName)
       await new Promise((resolve, reject)=> {
         const rl = readline(fileDir)
-        rl.on('line', (line)=> {
+        rl.on('line', (line, lineCount)=> {
           if (!line) {
             return resolve(null)
           }
@@ -289,22 +299,21 @@ class RestLog {
           let obj = null
           try {
             obj = JSON.parse(line)
-            debug('get line obj', obj)
+            debug(`get line -${lineCount}- obj`)
           } catch (err) {
             debug(`path line info fail @ ${fileDir}`, err)
-            return reject(err)
-          }
-
-          if (!obj) {
-            return resolve(null)
+            return
           }
 
           obj.createdAt = new Date(obj.createdAt)
           this.dbSaver.push(obj)
             .then(resolve)
             .catch(reject)
-        }).on((err)=> {
+        }).on('error', (err)=> {
           debug(`read file ${fileDir} line by line fail`, err)
+          reject(err)
+        }).on('end', ()=> {
+          resolve(null)
         })
       })
       debug(`update all data from ${fileDir} to remote db`)
