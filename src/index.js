@@ -160,7 +160,8 @@ class RestLog {
 
     for (const key in this.strictObj) {
       const strictItem = this.strictObj[key]
-      if (typeof strictItem === 'boolean' && strictItem && !optData[key]) {
+      if (typeof strictItem === 'boolean' && strictItem && !optData.hasOwnProperty(key)) {
+        debug(`optData not found ${key}`)
         return
       }
     }
