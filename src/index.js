@@ -173,6 +173,10 @@ class RestLog {
     }
   }
 
+  /**
+   * 获取绑定上下文的 koa 中间件
+   * @return {function}     koa 中间件
+   */
   getMiddleware() {
     return this.middleware_koa.bind(this)
   }
@@ -245,22 +249,6 @@ class RestLog {
   }
 
   /**
-   * 拉取数据
-   * @param  {object} filter            筛选条件
-   * @param  {date}   filter.startAt    开始时间
-   * @param  {date}   filter.endAt      结束时间
-   * @param  {string} filter.userId     操作用户ID
-   * @param  {string} filter.resource   操作对应的资源
-   * @param  {string} filter.operation  操作类型
-   * @param  {number} filter.page       列表分页
-   * @param  {number} filter.pageSize   列表单页长度
-   * @return {array}         操作记录数据
-   */
-  async search(filter) {
-    return await this.dbSaver.pull(filter)
-  }
-
-  /**
    * 将数据暂存到本地
    * @param  {[type]} optData 用户操作数据
    * @return
@@ -276,7 +264,6 @@ class RestLog {
       }
     )
   }
-
 
   /**
    * 将数据上传到远端数据库
@@ -339,6 +326,30 @@ class RestLog {
     debug('local2remote over')
   }
 
+  /**
+   * 拉取数据
+   * @param  {object} filter            筛选条件
+   * @param  {date}   filter.startAt    开始时间
+   * @param  {date}   filter.endAt      结束时间
+   * @param  {string} filter.userId     操作用户ID
+   * @param  {string} filter.resource   操作对应的资源
+   * @param  {string} filter.operation  操作类型
+   * @param  {number} filter.page       列表分页
+   * @param  {number} filter.pageSize   列表单页长度
+   * @return {array}         操作记录数据
+   */
+  async search(filter) {
+    return await this.dbSaver.pull(filter)
+  }
+
+  /**
+   * 返回一定过滤条件的数据量
+   * @param  {object} filter 查询过滤条件 同 search 方法
+   * @return {number}        数据量
+   */
+  async count(filter) {
+    return await this.dbSaver.count(filter)
+  }
 }
 
 export default RestLog

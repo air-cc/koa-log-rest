@@ -1,7 +1,9 @@
-import Koa from 'koa'
-import RestLog from '../lib'
+import should from 'should'
 import supertest from 'supertest'
+import Koa from 'koa'
 import mongodb from 'mongodb'
+
+import RestLog from '../lib'
 
 
 describe('base usage', ()=> {
@@ -46,7 +48,18 @@ describe('base usage', ()=> {
     restLog.search({
       startAt: new Date('2016-01-01'),
       endAt: new Date()
-    }).then(()=> {
+    }).then((data)=> {
+      data.should.be.an.Array()
+      done()
+    }).catch(done)
+  })
+
+  it('get users count', (done)=> {
+    restLog.count({
+      startAt: new Date('2016-01-01'),
+      endAt: new Date()
+    }).then((count)=> {
+      count.should.be.a.Number()
       done()
     }).catch(done)
   })
