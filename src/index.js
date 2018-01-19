@@ -4,7 +4,7 @@
  *
  **/
 
- /**
+/**
   * 数据结构
   *  {
       userId: '',
@@ -37,6 +37,23 @@ import MongodbSaver from './mongodbSaver'
 const debug = debugMod('rest-log')
 promisifyAll(fs)
 const logger = console.log.bind(console)
+
+/**
+ * 日期格式化
+ * @param {Date} date 
+ * @returns {String}
+ */
+const dateFormat = (date) => {
+  if (!(date instanceof Date)) {
+    return ''
+  }
+
+  return [
+    date.getFullYear(),
+    date.getMonth() + 1,
+    date.getDate()
+  ].join('-')
+}
 
 
 class RestLog {
@@ -255,7 +272,7 @@ class RestLog {
    * @return
    */
   async saveLocal(optData) {
-    const now_data = new Date().toLocaleDateString()
+    const now_data = dateFormat(new Date)
     const file = pathJoin(this.localPath, now_data + '.log')
     await fs.appendFileAsync(file,
       JSON.stringify(optData) + '\n',
